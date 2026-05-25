@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>GSAP Multi-Stage Sequence</title>
+<title>GSAP Single Image Sequence</title>
 
 <style>
 *{
@@ -15,7 +14,7 @@
 }
 
 body{
-  height:400vh;
+  height:300vh;
   background:#000;
   overflow-x:hidden;
   font-family:Arial,sans-serif;
@@ -26,11 +25,11 @@ body{
   inset:0;
   width:100%;
   height:100vh;
-  background:#000;
   overflow:hidden;
+  background:#000;
 }
 
-/* IMAGES */
+/* ONLY ONE IMAGE ACTIVE */
 .seq{
   position:absolute;
 
@@ -65,11 +64,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 const images = document.querySelectorAll(".seq");
 
-/* INITIAL STATE */
-images.forEach((img, i) => {
+/*
+INITIAL STATE:
+Everything hidden except first frame handled by scroll
+*/
+images.forEach((img) => {
   gsap.set(img, {
     x: 400,
-    scale: 0.8,
+    scale: 0.6,
     opacity: 0
   });
 });
@@ -87,44 +89,42 @@ images.forEach((img, i) => {
     }
   });
 
-  /* STAGE 1 → RIGHT (0.8 → 0.6) */
-  tl.to(img, {
-    x: 150,
-    scale: 0.6,
-    opacity: 1,
-    ease: "none",
-    duration: 0.33
-  });
+  /* STAGE 1: RIGHT → CENTER (scale up to 1) */
+  tl.fromTo(img,
+    {
+      x: 400,
+      scale: 0.7,
+      opacity: 1
+    },
+    {
+      x: 0,
+      scale: 1,
+      opacity: 1,
+      ease: "none",
+      duration: 0.5
+    }
+  )
 
-  /* STAGE 2 → CENTER (0.6 → 0.3) */
-  tl.to(img, {
-    x: 0,
-    scale: 0.3,
-    ease: "none",
-    duration: 0.33
-  });
-
-  /* STAGE 3 → EXIT (0.3 → 0) */
-  tl.to(img, {
+  /* STAGE 2: CENTER → LEFT (scale down slightly) */
+  .to(img, {
     x: -400,
-    scale: 0,
-    opacity: 0,
+    scale: 0.75,
     ease: "none",
-    duration: 0.34
+    duration: 0.5
   });
 
-  /* NEXT IMAGE SPAWN + GROW */
-  if(next) {
+  /* NEXT IMAGE APPEAR */
+  if(next){
 
     gsap.fromTo(next,
       {
         x: 400,
-        scale: 0,
+        scale: 0.7,
         opacity: 0
       },
       {
-        x: 150,
-        scale: 0.6,
+        x: 0,
+        scale: 1,
         opacity: 1,
         ease: "none",
         scrollTrigger: {
@@ -135,18 +135,6 @@ images.forEach((img, i) => {
         }
       }
     );
-
-    gsap.to(next, {
-      x: 0,
-      scale: 0.9,
-      ease: "none",
-      scrollTrigger: {
-        trigger: "body",
-        start: `top+=${i * window.innerHeight + window.innerHeight * 0.5} top`,
-        end: `top+=${(i + 1) * window.innerHeight} top`,
-        scrub: true
-      }
-    });
   }
 
 });
