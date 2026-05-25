@@ -1,1 +1,156 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>GSAP Multi-Stage Sequence</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  height:400vh;
+  background:#000;
+  overflow-x:hidden;
+  font-family:Arial,sans-serif;
+}
+
+.sequence-section{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100vh;
+  background:#000;
+  overflow:hidden;
+}
+
+/* IMAGES */
+.seq{
+  position:absolute;
+
+  width:45vw;
+  max-width:750px;
+
+  top:50%;
+  left:50%;
+
+  transform:translate(-50%, -50%);
+
+  opacity:0;
+
+  will-change:transform, opacity;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sequence-section">
+  <img src="images/1.png" class="seq">
+  <img src="images/2.png" class="seq">
+  <img src="images/3.png" class="seq">
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const images = document.querySelectorAll(".seq");
+
+/* INITIAL STATE */
+images.forEach((img, i) => {
+  gsap.set(img, {
+    x: 400,
+    scale: 0.8,
+    opacity: 0
+  });
+});
+
+images.forEach((img, i) => {
+
+  const next = images[i + 1];
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: "body",
+      start: `top+=${i * window.innerHeight} top`,
+      end: `top+=${(i + 1) * window.innerHeight} top`,
+      scrub: true
+    }
+  });
+
+  /* STAGE 1 → RIGHT (0.8 → 0.6) */
+  tl.to(img, {
+    x: 150,
+    scale: 0.6,
+    opacity: 1,
+    ease: "none",
+    duration: 0.33
+  });
+
+  /* STAGE 2 → CENTER (0.6 → 0.3) */
+  tl.to(img, {
+    x: 0,
+    scale: 0.3,
+    ease: "none",
+    duration: 0.33
+  });
+
+  /* STAGE 3 → EXIT (0.3 → 0) */
+  tl.to(img, {
+    x: -400,
+    scale: 0,
+    opacity: 0,
+    ease: "none",
+    duration: 0.34
+  });
+
+  /* NEXT IMAGE SPAWN + GROW */
+  if(next) {
+
+    gsap.fromTo(next,
+      {
+        x: 400,
+        scale: 0,
+        opacity: 0
+      },
+      {
+        x: 150,
+        scale: 0.6,
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "body",
+          start: `top+=${i * window.innerHeight} top`,
+          end: `top+=${(i + 1) * window.innerHeight} top`,
+          scrub: true
+        }
+      }
+    );
+
+    gsap.to(next, {
+      x: 0,
+      scale: 0.9,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: `top+=${i * window.innerHeight + window.innerHeight * 0.5} top`,
+        end: `top+=${(i + 1) * window.innerHeight} top`,
+        scrub: true
+      }
+    });
+  }
+
+});
+</script>
+
+</body>
+</html>
