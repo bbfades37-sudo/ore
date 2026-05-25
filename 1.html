@@ -1,1 +1,149 @@
-aa
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>GSAP Image Sequence Scroll</title>
+
+<style>
+  *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+  }
+
+  body{
+    background:#000;
+    height:400vh;
+    overflow-x:hidden;
+    font-family:Arial,sans-serif;
+  }
+
+  .sequence-section{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+  }
+
+  canvas{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+
+  .content{
+    position:relative;
+    z-index:10;
+    color:white;
+    text-align:center;
+    padding-top:120vh;
+    font-size:3rem;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sequence-section">
+  <canvas id="hero-lightpass"></canvas>
+</div>
+
+<div class="content">
+  <h1>Scroll Down</h1>
+</div>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const canvas = document.getElementById("hero-lightpass");
+const context = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const frameCount = 60;
+
+/*
+CHANGE THIS PATH
+
+Example:
+images/frame_0001.webp
+images/frame_0002.webp
+*/
+
+const currentFrame = (index) => (
+  `images/frame_${(index + 1).toString().padStart(4, '0')}.webp`
+);
+
+const images = [];
+const imageSeq = {
+  frame: 0
+};
+
+for (let i = 0; i < frameCount; i++) {
+  const img = new Image();
+  img.src = currentFrame(i);
+  images.push(img);
+}
+
+images[0].onload = render;
+
+function render() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  const img = images[imageSeq.frame];
+
+  // Cover canvas like CSS background-size: cover
+  const canvasRatio = canvas.width / canvas.height;
+  const imageRatio = img.width / img.height;
+
+  let drawWidth, drawHeight;
+
+  if (canvasRatio > imageRatio) {
+    drawWidth = canvas.width;
+    drawHeight = canvas.width / imageRatio;
+  } else {
+    drawHeight = canvas.height;
+    drawWidth = canvas.height * imageRatio;
+  }
+
+  const x = (canvas.width - drawWidth) / 2;
+  const y = (canvas.height - drawHeight) / 2;
+
+  context.drawImage(img, x, y, drawWidth, drawHeight);
+}
+
+gsap.to(imageSeq, {
+  frame: frameCount - 1,
+  snap: "frame",
+  ease: "none",
+  scrollTrigger: {
+    scrub: 1,
+    trigger: ".sequence-section",
+    start: "top top",
+    end: "300% top"
+  },
+  onUpdate: render
+});
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  render();
+});
+</script>
+
+</body>
+</html>
