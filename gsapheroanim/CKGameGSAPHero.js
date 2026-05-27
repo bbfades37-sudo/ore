@@ -292,29 +292,3 @@ class CKGameGSAPHero {
         }
     }
 
-    /* Production Deploy Initializations */
-    document.addEventListener("DOMContentLoaded", () => {
-        new CKGameGSAPHero({
-            root: '.hero-one',
-            playAtStart: true,
-            typingSpeed: 0.03,
-            typingLines: [
-                'We build premium systems.',
-                'We scale brands globally.',
-                'We engineer conversion.'
-            ],
-            enableParticles: true
-        });
-
-        new CKGameGSAPHero({
-            root: '.hero-two',
-            playAtStart: false,
-            typingSpeed: 0.02,
-            typingLines: [
-                'Second hero layout initialized.',
-                'Viewport triggered animation via Observer API.',
-                'Completely clean execution without collisions.'
-            ],
-            enableParticles: true
-        });
-    });
