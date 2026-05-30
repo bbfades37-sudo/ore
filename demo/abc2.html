@@ -9,7 +9,7 @@
   
   <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.23/dist/lenis.css">
   
-  <style>    
+ <style>    
     /* ==========================================================================       NEO-CYAN & ARCHITECTURE VIOLET HIGH-PERFORMANCE RAW CANVAS STYLES       ========================================================================== */    
     :root {      
       --space-bg: #06080c;      
@@ -76,7 +76,7 @@
       left: 0;      
       width: 100vw;      
       height: 100vh;      
-      z-index: 2;      
+      z-index: 10; /* Elevated to ensure hero elements remain cleanly isolated */      
       overflow: hidden;      
       display: flex;      
       flex-direction: column;    
@@ -436,7 +436,7 @@
       display: flex;      
       align-items: center;      
       justify-content: space-between;      
-      z-index: 10;      
+      z-index: 100; /* Pulled above portal sections and fixed 3D layers */      
       background: transparent;      
       backdrop-filter: none;      
       -webkit-backdrop-filter: none;      
@@ -597,14 +597,12 @@
     /* ==========================================================================       PORTAL CONTENT BELOW HERO (GLASSMORPHIC & TECH STYLING)       ========================================================================== */    
     .ck_portal_content {      
       position: relative;      
-      z-index: 3;      
+      z-index: 5; /* Adjusted to sit elegantly with the fixed background layer logic */      
+      max-width: 100%;      
+      padding: 0;      
+      gap: 0;      
       background: transparent;      
-      padding: 8rem 4rem 12rem 4rem;      
-      max-width: 1200px;      
-      margin: -2px auto 0 auto;      
-      display: flex;      
-      flex-direction: column;      
-      gap: 12rem;      
+      margin: 0;    
       pointer-events: auto;    
     }        
     
@@ -616,6 +614,9 @@
 
     .ck_portal_section {      
       position: relative;    
+      padding: 9rem max(3rem, calc((100vw - 1200px) / 2 + 3rem));      
+      overflow: hidden;      
+      z-index: 1; /* Creates a clean stacked formatting context for children panels */    
     }
 
     .ck_portal_tag {      
@@ -674,8 +675,8 @@
       aspect-ratio: 4/3;      
       border-radius: 20px;      
       border: 1px solid rgba(0, 240, 255, 0.12);      
-      background: rgba(6, 8, 12, 0.4);      
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 240, 255, 0.05);      
+      background: rgba(0,0,0,0.02);      
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);      
       position: relative;      
       overflow: hidden;      
       display: flex;      
@@ -727,8 +728,10 @@
 
     /* MANIFESTO GLASS CARD */    
     .ck_portal_card {      
-      background: rgb(34 153 255 / 10%);      
-      border: 1px solid rgba(0, 240, 255, 0.15);      
+      background: rgba(0, 0, 0, 0.025);      
+      border-color: rgba(0, 0, 0, 0.06);      
+      backdrop-filter: blur(8px);      
+      -webkit-backdrop-filter: blur(8px);      
       border-radius: 20px;      
       padding: 2.5rem;      
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);    
@@ -760,8 +763,11 @@
     }
 
     .ck_service_card {      
-      background: rgba(10, 15, 30, 0.55);      
-      border: 1px solid rgba(0, 240, 255, 0.12);      
+      background: rgba(255, 255, 255, 0.85);      
+      border-color: rgba(0, 0, 0, 0.07);      
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);      
+      backdrop-filter: blur(12px);      
+      -webkit-backdrop-filter: blur(12px);      
       border-radius: 16px;      
       padding: 2rem;      
       transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease, box-shadow 0.4s ease;      
@@ -771,9 +777,8 @@
     }
 
     .ck_service_card:hover {      
-      transform: translateY(-6px);      
       border-color: rgba(0, 240, 255, 0.45);      
-      box-shadow: 0 12px 30px rgba(0, 240, 255, 0.08);    
+      box-shadow: 0 8px 30px rgba(0, 240, 255, 0.12);    
     }
 
     .ck_service_icon {      
@@ -799,7 +804,7 @@
       font-size: 0.65rem;      
       letter-spacing: 2px;      
       text-transform: uppercase;      
-      color: #a78bfa;      
+      color: #7c3aed;      
       font-family: monospace;      
       font-weight: 600;    
     }
@@ -807,13 +812,13 @@
     .ck_service_title {      
       font-size: 1.3rem;      
       font-weight: 400;      
-      color: var(--text-pure);    
+      color: #0a0a0a;    
     }
 
     .ck_service_desc {      
       font-size: 0.95rem;      
       line-height: 1.6;      
-      color: #cbd5e1;    
+      color: #4b5563;    
     }
 
     /* TARGET PROFILE CARDS */    
@@ -830,14 +835,16 @@
     }
 
     .ck_target_card {      
-      background: rgb(34 153 255 / 8%);      
-      border: 1px solid rgba(0, 240, 255, 0.15);      
+      background: rgba(255, 255, 255, 0.75);      
+      border-color: rgba(0, 240, 255, 0.2);      
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);      
+      backdrop-filter: blur(12px);      
+      -webkit-backdrop-filter: blur(12px);      
       border-radius: 18px;      
       padding: 2.5rem;      
       display: flex;      
       flex-direction: column;      
-      gap: 1rem;      
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);    
+      gap: 1rem;    
     }
 
     .ck_target_status {      
@@ -884,8 +891,8 @@
     }
 
     .ck_exclusion_card {      
-      background: rgba(236, 72, 153, 0.02);      
-      border: 1px solid rgba(236, 72, 153, 0.12);      
+      background: rgba(236, 72, 153, 0.03);      
+      border-color: rgba(236, 72, 153, 0.12);      
       border-radius: 14px;      
       padding: 2rem;      
       display: flex;      
@@ -907,7 +914,7 @@
 
     .ck_exclusion_text {      
       font-size: 1rem;      
-      color: #cbd5e1;      
+      color: #374151;      
       line-height: 1.6;    
     }
 
@@ -927,40 +934,44 @@
     }
 
     .ck_stat_node {      
-      background: rgba(10, 15, 30, 0.4);      
-      border: 1px solid rgba(0, 240, 255, 0.12);      
+      background: rgba(255, 255, 255, 0.75);      
+      border-color: rgba(0, 240, 255, 0.2);      
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);      
+      backdrop-filter: blur(10px);      
+      -webkit-backdrop-filter: blur(10px);      
       border-radius: 12px;      
       padding: 2rem;      
       text-align: center;      
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);    
     }
 
     .ck_stat_value {      
       font-size: 3.2rem;      
       font-weight: 300;      
-      color: var(--text-pure);      
-      text-shadow: 0 0 20px rgba(0, 240, 255, 0.2);      
+      color: #0a0a0a;      
+      text-shadow: none;      
       margin-bottom: 0.5rem;    
     }
 
     .ck_stat_label {      
       font-size: 0.85rem;      
-      color: #cbd5e1;      
+      color: #6b7280;      
       text-transform: uppercase;      
       letter-spacing: 2px;    
     }
 
     /* FEATURED PARTNER CARD */    
     .ck_case_study_card {      
-      background: rgba(10, 15, 30, 0.65);      
-      border: 1px dashed rgba(0, 240, 255, 0.2);      
+      background: rgba(255, 255, 255, 0.85);      
+      border-color: rgba(0, 240, 255, 0.2);      
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);      
+      backdrop-filter: blur(16px);      
+      -webkit-backdrop-filter: blur(16px);      
       border-radius: 20px;      
       padding: 3rem;      
       display: grid;      
       grid-template-columns: 1.2fr 0.8fr;      
       gap: 3.5rem;      
-      align-items: center;      
-      box-shadow: 0 15px 35px rgba(0,0,0,0.3);    
+      align-items: center;    
     }
 
     @media (max-width: 768px) {      
@@ -986,8 +997,8 @@
 
     /* SYSTEM CTA PORTAL */    
     .ck_cta_card {      
-      background: linear-gradient(135deg, rgba(70, 44, 125, 0.2), rgba(6, 8, 12, 0.7));      
-      border: 1px solid rgba(0, 240, 255, 0.25);      
+      background: linear-gradient(135deg, rgba(70, 44, 125, 0.03), rgba(0, 240, 255, 0.02));      
+      border-color: rgba(0, 240, 255, 0.15);      
       border-radius: 24px;      
       padding: 5rem 4rem;      
       text-align: center;      
@@ -1021,9 +1032,9 @@
       width: 100%;      
       height: 100%;      
       pointer-events: none;      
-      z-index: 1; /* Sits directly over background colors but under content elements */      
+      z-index: 3; /* Elevated over section backgrounds (z-index 1) but below copy content (z-index 4) */      
       opacity: 0;      
-      mix-blend-mode: normal; /* High performance blending compatibility */      
+      mix-blend-mode: normal;      
       transition: opacity 0.8s ease;    
     }    
     #canvas3d.spline-visible {      
@@ -1031,21 +1042,7 @@
     }
 
     /* ==========================================================================       PORTAL SECTIONS — WHITE LIGHT THEME       ========================================================================== */    
-    .ck_portal_content {      
-      max-width: 100%;      
-      padding: 0;      
-      gap: 0;      
-      background: transparent;      
-      margin: 0;    
-    }
-
-    .ck_portal_section {      
-      padding: 9rem max(3rem, calc((100vw - 1200px) / 2 + 3rem));      
-      overflow: hidden;      
-      position: relative;    
-    }
-
-    /* Alternating section backgrounds */    
+    /* Alternating section background color foundations */    
     #ck_section_manifesto  { background: #ffffff; }    
     #ck_section_services   { background: #f7f8fb; }    
     #ck_section_target     { background: #edf8ff; }    
@@ -1056,66 +1053,7 @@
     /* Text overrides for light backgrounds */    
     .ck_portal_content .ck_portal_heading  { color: #0a0a0a; }    
     .ck_portal_content .ck_portal_para     { color: #4b5563; }    
-    .ck_portal_content .ck_service_title   { color: #0a0a0a; }    
-    .ck_portal_content .ck_service_desc    { color: #4b5563; }    
-    .ck_portal_content .ck_service_category{ color: #7c3aed; }    
-    .ck_portal_content .ck_stat_value      { color: #0a0a0a; text-shadow: none; }    
-    .ck_portal_content .ck_stat_label      { color: #6b7280; }    
-    .ck_portal_content .ck_exclusion_text  { color: #374151; }    
     .ck_portal_content .ck_portal_para strong { color: #0a0a0a; }
-
-    /* Card overrides with advanced glassmorphism filters */    
-    .ck_portal_content .ck_service_card {      
-      background: rgba(255, 255, 255, 0.85);      
-      border-color: rgba(0, 0, 0, 0.07);      
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);      
-      backdrop-filter: blur(12px);      
-      -webkit-backdrop-filter: blur(12px);    
-    }    
-    .ck_portal_content .ck_service_card:hover {      
-      border-color: rgba(0, 240, 255, 0.45);      
-      box-shadow: 0 8px 30px rgba(0, 240, 255, 0.12);    
-    }    
-    .ck_portal_content .ck_portal_card {      
-      background: rgba(0, 0, 0, 0.025);      
-      border-color: rgba(0, 0, 0, 0.06);      
-      backdrop-filter: blur(8px);      
-      -webkit-backdrop-filter: blur(8px);    
-    }    
-    .ck_portal_content .ck_portal_schematic {      
-      background: rgba(0, 0, 0, 0.02);      
-      border-color: rgba(0, 240, 255, 0.15);      
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);    
-    }    
-    .ck_portal_content .ck_target_card {      
-      background: rgba(255, 255, 255, 0.75);      
-      border-color: rgba(0, 240, 255, 0.2);      
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);      
-      backdrop-filter: blur(12px);      
-      -webkit-backdrop-filter: blur(12px);    
-    }    
-    .ck_portal_content .ck_exclusion_card {      
-      background: rgba(236, 72, 153, 0.03);      
-      border-color: rgba(236, 72, 153, 0.12);    
-    }    
-    .ck_portal_content .ck_stat_node {      
-      background: rgba(255, 255, 255, 0.75);      
-      border-color: rgba(0, 240, 255, 0.2);      
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);      
-      backdrop-filter: blur(10px);      
-      -webkit-backdrop-filter: blur(10px);    
-    }    
-    .ck_portal_content .ck_case_study_card {      
-      background: rgba(255, 255, 255, 0.85);      
-      border-color: rgba(0, 240, 255, 0.2);      
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);      
-      backdrop-filter: blur(16px);      
-      -webkit-backdrop-filter: blur(16px);    
-    }    
-    .ck_portal_content .ck_cta_card {      
-      background: linear-gradient(135deg, rgba(70, 44, 125, 0.03), rgba(0, 240, 255, 0.02));      
-      border-color: rgba(0, 240, 255, 0.15);    
-    }
 
     /* ==========================================================================       MARQUEE BACKGROUND TYPOGRAPHY ENGINE       ========================================================================== */    
     .ck_marquee_bg {      
@@ -1126,15 +1064,11 @@
       width: 100%;      
       overflow: hidden;      
       pointer-events: none;      
-      z-index: 0;      
+      z-index: 2; /* Positioned directly between section backgrounds and the fixed crystal canvas */      
       white-space: nowrap;      
       user-select: none;    
     }
 
-    /* Removed infinite loop CSS animation declarations to optimize for scroll interaction.      
-      This track element is prepared for programmatic scroll-jacking, dynamic direction reversing,       
-      and clean deceleration stops using your viewport/Lenis engine setup.    
-    */    
     .ck_marquee_track {      
       display: inline-block;      
       will-change: transform;    
@@ -1156,10 +1090,11 @@
     #ck_section_experience .ck_marquee_track span { color: rgba(139, 92, 246, 0.09); }    
     #ck_section_cta        .ck_marquee_track span { color: rgba(0, 0, 0, 0.045); }
 
-    /* All section content sits above the marquee layer */    
+    /* ==========================================================================       CONTENT LAYER OVERLAYS (FOREGROUND PANELS)       ========================================================================== */    
+    /* All interactive grid structures and written elements sit above the canvas layer */    
     .ck_portal_section > *:not(.ck_marquee_bg) {      
       position: relative;      
-      z-index: 2;    
+      z-index: 4; /* Pushed above #canvas3d (z-index 3) to protect click events and readability */    
     }  
   </style>
 </head>
