@@ -1543,34 +1543,49 @@
       });
 
       function renderCanvasFrame(frameIndex) {
-        const img = frameImages[frameIndex];
-        if (!img || img.width === 0) return;
+  const img = frameImages[frameIndex];
+  if (!img || img.width === 0) return;
 
-        const canvasWidth = window.innerWidth;
-        const canvasHeight = window.innerHeight;
-        const imgWidth = 1744;
-        const imgHeight = 1168;
-        
-        const imgRatio = imgWidth / imgHeight;
-        const canvasRatio = canvasWidth / canvasHeight;
-        
-        let drawWidth, drawHeight, drawX, drawY;
-        const padding = canvasParallaxIntensity * 2;
+  const canvasWidth = window.innerWidth;
+  const canvasHeight = window.innerHeight;
+  
+  // 1. Native dimensions of your source frames
+  const maxImgWidth = 1744;
+  const maxImgHeight = 1168;
+  
+  const imgRatio = maxImgWidth / maxImgHeight;
+  const canvasRatio = canvasWidth / canvasHeight;
+  
+  let drawWidth, drawHeight, drawX, drawY;
+  const padding = canvasParallaxIntensity * 2;
 
-        if (canvasRatio > imgRatio) {
-          drawWidth = canvasWidth + padding;
-          drawHeight = (canvasWidth + padding) / imgRatio;
-        } else {
-          drawWidth = (canvasHeight + padding) * imgRatio;
-          drawHeight = canvasHeight + padding;
-        }
+  // 2. Calculate standard cover dimensions including parallax padding
+  if (canvasRatio > imgRatio) {
+    drawWidth = canvasWidth + padding;
+    drawHeight = (canvasWidth + padding) / imgRatio;
+  } else {
+    drawWidth = (canvasHeight + padding) * imgRatio;
+    drawHeight = canvasHeight + padding;
+  }
 
-        drawX = ((canvasWidth - drawWidth) / 2) + (mouseX * canvasParallaxIntensity);
-        drawY = ((canvasHeight - drawHeight) / 2) + (mouseY * canvasParallaxIntensity);
-        
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-      }
+  // 3. CRITICAL: Clamp the dimensions so they never exceed native size
+  if (drawWidth > maxImgWidth) {
+    drawWidth = maxImgWidth;
+    drawHeight = maxImgWidth / imgRatio;
+  }
+  if (drawHeight > maxImgHeight) {
+    drawHeight = maxImgHeight;
+    drawWidth = maxImgHeight * imgRatio;
+  }
+
+  // 4. Center the image inside the canvas frame + apply parallax offsets
+  drawX = ((canvasWidth - drawWidth) / 2) + (mouseX * canvasParallaxIntensity);
+  drawY = ((canvasHeight - drawHeight) / 2) + (mouseY * canvasParallaxIntensity);
+  
+  // Clear and paint
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+}
 
       const lenis = new Lenis({
         duration: 1.2,
