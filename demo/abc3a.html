@@ -1529,64 +1529,75 @@
       }
 
       function resizeCanvas() {
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        ctx.scale(dpr, dpr);
-        renderCanvasFrame(Math.round(currentFrame));
-      }
-      window.addEventListener('resize', resizeCanvas);
+  const dpr = window.devicePixelRatio || 1;
+  
+  let viewportWidth = window.innerWidth;
+  let viewportHeight = window.innerHeight;
+  
+  const maxImgWidth = 1744;
+  const maxImgHeight = 1168;
+  const imgRatio = maxImgWidth / maxImgHeight;
+  const canvasRatio = viewportWidth / viewportHeight;
+  
+  let targetWidth, targetHeight;
+  const padding = canvasParallaxIntensity * 2;
 
-      window.addEventListener("mousemove", (e) => {
-        targetMouseX = (e.clientX / window.innerWidth) - 0.5;
-        targetMouseY = (e.clientY / window.innerHeight) - 0.5;
-      });
+  // Calculate "cover" size based on viewport
+  if (canvasRatio > imgRatio) {
+    targetWidth = viewportWidth + padding;
+    targetHeight = (viewportWidth + padding) / imgRatio;
+  } else {
+    targetWidth = (viewportHeight + padding) * imgRatio;
+    targetHeight = viewportHeight + padding;
+  }
 
-      function renderCanvasFrame(frameIndex) {
+  // HARD CAP: Clamp canvas element size to original image dimensions
+  if (targetWidth > maxImgWidth) {
+    targetWidth = maxImgWidth;
+    targetHeight = maxImgWidth / imgRatio;
+  }
+  if (targetHeight > maxImgHeight) {
+    targetHeight = maxImgHeight;
+    targetWidth = maxImgHeight * imgRatio;
+  }
+
+  // Set element display size via CSS styling
+  canvas.style.width = `${targetWidth}px`;
+  canvas.style.height = `${targetHeight}px`;
+
+  // Scale internal buffer for retina displays
+  canvas.width = targetWidth * dpr;
+  canvas.height = targetHeight * dpr;
+  
+  ctx.scale(dpr, dpr);
+  renderCanvasFrame(Math.round(currentFrame));
+}
+
+function renderCanvasFrame(frameIndex) {
   const img = frameImages[frameIndex];
   if (!img || img.width === 0) return;
 
-  const canvasWidth = window.innerWidth;
-  const canvasHeight = window.innerHeight;
+  // Grab the bounding size we computed in resizeCanvas
+  const canvasWidth = parseFloat(canvas.style.width);
+  const canvasHeight = parseFloat(canvas.style.height);
   
-  // 1. Native dimensions of your source frames
-  const maxImgWidth = 1744;
-  const maxImgHeight = 1168;
+  // Draw the image to perfectly fill the canvas element boundaries
+  // We add parallax shift here relative to the canvas itself
+  let drawX = (mouseX * canvasParallaxIntensity);
+  let drawY = (mouseY * canvasParallaxIntensity);
   
-  const imgRatio = maxImgWidth / maxImgHeight;
-  const canvasRatio = canvasWidth / canvasHeight;
-  console.log('ola');
-  let drawWidth, drawHeight, drawX, drawY;
-  const padding = canvasParallaxIntensity * 2;
-
-  // 2. Calculate standard cover dimensions including parallax padding
-  if (canvasRatio > imgRatio) {
-    drawWidth = canvasWidth + padding;
-    drawHeight = (canvasWidth + padding) / imgRatio;
-  } else {
-    drawWidth = (canvasHeight + padding) * imgRatio;
-    drawHeight = canvasHeight + padding;
-  }
-
-  // 3. CRITICAL: Clamp the dimensions so they never exceed native size
-  if (drawWidth > maxImgWidth) {
-    drawWidth = maxImgWidth;
-    drawHeight = maxImgWidth / imgRatio;
-  }
-  if (drawHeight > maxImgHeight) {
-    drawHeight = maxImgHeight;
-    drawWidth = maxImgHeight * imgRatio;
-  }
-
-  // 4. Center the image inside the canvas frame + apply parallax offsets
-  drawX = ((canvasWidth - drawWidth) / 2) + (mouseX * canvasParallaxIntensity);
-  drawY = ((canvasHeight - drawHeight) / 2) + (mouseY * canvasParallaxIntensity);
-  
-  // Clear and paint
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+  
+  // Draw slightly oversized to allow parallax shifting without showing edges
+  const overflow = 1.05; 
+  ctx.drawImage(
+    img, 
+    -((canvasWidth * overflow - canvasWidth) / 2) + drawX, 
+    -((canvasHeight * overflow - canvasHeight) / 2) + drawY, 
+    canvasWidth * overflow, 
+    canvasHeight * overflow
+  );
 }
-
       const lenis = new Lenis({
         duration: 1.2,
         lerp: 0.08, 
