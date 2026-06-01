@@ -1,1 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brixen Systems — Sci-Fi Glassmorphic HUD Engine</title>
+  
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.23/dist/lenis.css">
+  
+  <style>
+    /* ==========================================================================
+       NEO-CYAN & ARCHITECTURE VIOLET HIGH-PERFORMANCE RAW CANVAS STYLES
+       ========================================================================== */
+    :root {
+      --space-bg: #06080c;
+      --sapphire-core: #00f0ff;
+      --brand-arch: #462c7d;
+      --cyan-glow: rgba(0, 240, 255, 0.08);
+      --brand-glow: rgba(70, 44, 125, 0.22);
+      
+      --text-pure: #ffffff;
+      --text-muted: #4a5568;
+      --text-dim: #e2e8f0;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Dynamic State Color Tokens for Vignette Engine */
+      --vignette-color: 0, 240, 255; 
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Custom Browser Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--space-bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--brand-arch), #8b5cf6, var(--sapphire-core));
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #8b5cf6, var(--sapphire-core));
+    }
+
+    /* Firefox Scrollbar support */
+    html {
+      scrollbar-color: var(--sapphire-core) var(--space-bg);
+      scrollbar-width: thin;
+    }
+
+    body.ck_nebula_body {
+      background-color: var(--space-bg);
+      color: var(--text-pure);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ck_nebula_scroll_spacer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 400vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .ck_nebula_hero {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ck_nebula_canvas_container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -3;
+    }
+
+    #ck_nebula_canvas_renderer {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: none !important;
+    }
+
+    /* Dynamic State-Shifting Contrast Vignette Overlay Engine */
+    .ck_state_vignette_overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      pointer-events: none;
+      background: 
+        radial-gradient(circle at 80% 50%, rgba(var(--vignette-color), 0.12) 0%, rgba(6, 8, 12, 0) 70%);
+      transition: background 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Multi-layered Independent Parallax Debris/HUD Asset Layering */
+    .ck_parallax_layer {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      pointer-events: none;
+      z-index: -1; 
+      will-change: transform;
+    }
+
+    .ck_parallax_asset {
+      position: absolute;
+      background-size: contain;
+      background-repeat: no-repeat;
+      filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.2));
+    }
+
+    .asset_layer_shallow {
+      width: 220px;
+      height: 220px;
+      top: 15%;
+      right: 10%;
+      background-image: url('https://raw.githubusercontent.com/bbfades37-sudo/ore/main/frames/2/ezgif-frame-011.png?raw=true'); 
+      opacity: 0.65;
+    }
+
+    .asset_layer_deep {
+      width: 320px;
+      height: 320px;
+      bottom: 8%;
+      left: 10%;
+      background-image: url('https://raw.githubusercontent.com/bbfades37-sudo/ore/main/frames/2/ezgif-frame-026.png?raw=true'); 
+      opacity: 0.35;
+      filter: blur(3px) drop-shadow(0 0 30px rgba(70, 44, 125, 0.4));
+    }
+
+    .ck_nebula_orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(160px);
+      pointer-events: none;
+      z-index: -1;
+    }
+    .ck_orb_sapphire {
+      width: 600px;
+      height: 600px;
+      background: var(--cyan-glow);
+      top: -10%;
+      left: -5%;
+    }
+    .ck_orb_purple {
+      width: 500px;
+      height: 500px;
+      background: var(--brand-glow);
+      bottom: -10%;
+      right: -5%;
+    }
+
+    /* ==========================================================================
+       FAR-LEFT COLUMN OPTIMIZED LAYOUT GRID
+       ========================================================================== */
+    .ck_nebula_grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr; 
+      padding: 4.5rem 4rem 8rem 4rem; 
+      align-items: center;
+      gap: 4rem;
+      height: calc(100vh - 6rem);
+    }
+
+    /* SCI-FI NO-BLUR PANEL (PINNED FAR LEFT) */
+    .ck_nebula_left_panel {
+      max-width: 480px;
+      justify-self: start; 
+      padding: 2.5rem;
+      border-radius: 24px;
+      background: transparent;
+      transform: translate3d(0, 0, 0);
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                  opacity 0.6s ease,
+                  visibility 0.6s ease;
+    }
+
+    .ck_nebula_grid:not(.ck_state_1_active) .ck_nebula_left_panel {
+      opacity: 0;
+      visibility: hidden;
+      transform: translate3d(-50px, 0, 0);
+      pointer-events: none;
+    }
+
+    .ck_nebula_pretag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      background: rgba(0, 240, 255, 0.05);
+      padding: 0.45rem 1rem;
+      border-radius: 30px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+    }
+
+    .ck_nebula_pulse_node {
+      width: 6px;
+      height: 6px;
+      background: var(--sapphire-core);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--sapphire-core);
+      animation: ck_neonpulse 2s infinite ease-in-out;
+    }
+
+    .ck_nebula_pretag span {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #cbd5e1;
+      text-transform: uppercase;
+    }
+
+    .ck_nebula_title {
+      font-size: 3.2rem;
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .ck_nebula_title_dim {
+      color: transparent;
+      background: linear-gradient(135deg, var(--sapphire-core), #a78bfa);
+      background-clip: text;
+      -webkit-background-clip: text;
+      font-weight: 500;
+    }
+
+    .ck_nebula_divider {
+      width: 65px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--sapphire-core), transparent);
+      margin-bottom: 1.5rem;
+    }
+
+    .ck_nebula_sub {
+      font-size: 1.1rem;
+      line-height: 1.65;
+      min-height: 90px;
+      margin-bottom: 2.5rem;
+      color: #cbd5e1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .ck_type_emphasis {
+      color: #ffffff;
+      font-weight: 700;
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+
+    .ck_rainbow_laser_cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1.4rem;
+      margin-left: 4px;
+      vertical-align: -0.2rem;
+      background: linear-gradient(to bottom, #00f0ff, #7f00ff, #ff007f, #00ff7f, #00f0ff);
+      background-size: 100% 400%;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.95), 0 0 22px rgba(70, 44, 125, 0.6);
+      animation: ck_rainbow_flow 2.5s linear infinite, ck_cursor_blink 0.7s infinite steps(2);
+    }
+
+    .ck_nebula_actions {
+      display: flex;
+    }
+
+    .ck_nebula_btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1rem 2.2rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      transition: transform 0.2s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.3s ease;
+    }
+
+    .ck_nebula_btn_text {
+      pointer-events: none;
+    }
+
+    .ck_nebula_btn_primary {
+      background: linear-gradient(135deg, var(--brand-arch), rgba(70, 44, 125, 0.6));
+      color: var(--text-pure);
+      box-shadow: 0 4px 25px rgba(70, 44, 125, 0.3);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+    }
+
+    .ck_nebula_btn_primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.35);
+      border-color: var(--sapphire-core);
+    }
+
+    .ck_nebula_right_panel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                  transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .ck_nebula_grid.ck_state_1_active .ck_nebula_right_panel {
+      opacity: 0;
+      transform: translate3d(40px, 0, 0);
+      pointer-events: none;
+    }
+
+    .ck_nebula_sticky_header {
+      margin-bottom: 2rem;
+      padding-left: 1rem;
+    }
+
+    .ck_nebula_intro_tag {
+      font-size: 0.65rem; 
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--sapphire-core);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .ck_nebula_intro_heading {
+      font-size: 1.45rem; 
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--text-pure);
+      letter-spacing: -0.01em;
+    }
+
+    .ck_nebula_outcomes_window {
+      position: relative;
+      min-height: 280px;
+      width: 100%;
+    }
+
+    .ck_nebula_state_block {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translate3d(0, 30px, 0);
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), 
+                  transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .ck_nebula_state_block.ck_nebula_visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      pointer-events: auto;
+    }
+
+    .ck_nebula_card {
+      position: relative;
+      padding: 2.5rem 2.5rem 2.5rem 4.5rem;
+      border-radius: 16px;
+      background: rgb(34 153 255 / 25%);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .ck_nebula_card_num {
+      position: absolute;
+      left: 2rem;
+      top: 2.6rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--sapphire-core);
+      font-family: monospace;
+    }
+
+    .ck_nebula_card_title {
+      font-size: 1.65rem;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .ck_nebula_card_desc {
+      font-size: 1.02rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+      margin-bottom: 1.25rem;
+    }
+
+    .ck_nebula_tag_list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      list-style: none;
+    }
+
+    .ck_nebula_tag_list li {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--brand-arch);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       PERSISTENT BOTTOM VIEWPORT STICKY FOOTER ENGINE
+       ========================================================================= */
+    .ck_nebula_footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 2rem 4rem; 
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .ck_footer_left_group {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      background: rgba(10, 15, 30, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+    }
+
+    .ck_nebula_scroll_track {
+      width: 140px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .ck_nebula_scroll_bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 25%;
+      background: linear-gradient(90deg, var(--brand-arch), var(--sapphire-core));
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    #ck_nebula_state_num {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--sapphire-core);
+      font-family: monospace;
+    }
+
+    .ck_nebula_footer_text {
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .ck_hud_reveal_indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0.8;
+      animation: ck_reveal_pulse 2s infinite ease-in-out;
+      transition: opacity 0.5s ease;
+      background: rgba(10, 15, 30, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+    }
+    
+    .ck_hud_reveal_indicator.ck_hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ck_hud_reveal_indicator span {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--sapphire-core);
+      font-family: monospace;
+    }
+
+    .ck_hud_reveal_indicator svg {
+      color: var(--sapphire-core);
+      animation: ck_arrow_bounce 1.5s infinite ease-in-out;
+    }
+
+    /* Top Continuous Scroll Progress Bar */
+    .ck_top_progress_bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand-arch), var(--sapphire-core));
+      z-index: 100;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       MEDIA ADAPTATION LAYER
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .ck_nebula_grid { padding: 4rem 3rem 8rem 3rem; gap: 3rem; }
+      .ck_nebula_footer { padding: 2rem 3rem; }
+      .ck_nebula_title { font-size: 2.8rem; }
+    }
+
+    @media (max-width: 768px) {
+      .ck_nebula_grid, .ck_nebula_grid.ck_state_1_active { 
+        grid-template-columns: 1fr; 
+        overflow-y: auto; 
+        padding: 4rem 2rem 10rem 2rem; 
+        align-items: start; 
+        gap: 3rem; 
+      }
+      .ck_nebula_left_panel { width: 100%; max-width: 100%; padding: 1.5rem 0; justify-self: stretch; }
+      .ck_nebula_grid:not(.ck_state_1_active) .ck_nebula_left_panel { display: none; }
+      .ck_nebula_right_panel { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+      
+      .ck_nebula_footer { 
+        display: flex !important; 
+        padding: 1.5rem 2rem;
+      }
+      .ck_nebula_scroll_track {
+        width: 80px;
+      }
+      .ck_parallax_layer { display: none; } 
+    }
+
+    @keyframes ck_neonpulse {
+      0%, 100% { opacity: 0.4; box-shadow: 0 0 8px var(--sapphire-core); }
+      50% { opacity: 1; box-shadow: 0 0 16px var(--sapphire-core); }
+    }
+    @keyframes ck_rainbow_flow {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 0% 400%; }
+    }
+    @keyframes ck_cursor_blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes ck_reveal_pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.9; }
+    }
+    @keyframes ck_arrow_bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* ==========================================================================
+       SCROLL CONTAINER & HERO WRAPPER
+       ========================================================================== */
+    .ck_hero_scroll_wrapper {
+      position: relative;
+      height: 400vh;
+      width: 100%;
+    }
+
+    /* ==========================================================================
+       PORTAL CONTENT BELOW HERO (GLASSMORPHIC & TECH STYLING)
+       ========================================================================== */
+    .ck_portal_content {
+      position: relative;
+      z-index: 3;
+      background: transparent;
+      padding: 8rem 4rem 12rem 4rem;
+      max-width: 1200px;
+      margin: -2px auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12rem;
+      pointer-events: auto;
+    }
+    
+    .ck_portal_grid_bg {
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      background-position: center top;
+    }
+
+    .ck_portal_section {
+      position: relative;
+    }
+
+    .ck_portal_tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--sapphire-core);
+      font-family: monospace;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .ck_portal_heading {
+      font-size: 2.8rem;
+      font-weight: 300;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 3.5rem;
+      color: var(--text-pure);
+    }
+
+    .ck_text_glow_cyan {
+      color: transparent;
+      background: linear-gradient(135deg, var(--sapphire-core), #a78bfa);
+      background-clip: text;
+      -webkit-background-clip: text;
+      font-weight: 500;
+      text-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+    }
+
+    .ck_portal_split {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .ck_portal_split {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .ck_portal_heading {
+        font-size: 2.2rem;
+      }
+      .ck_portal_content {
+        padding: 6rem 2rem 8rem 2rem;
+        gap: 8rem;
+      }
+    }
+
+    /* CYBORG HUD RADAR SCHEMATIC */
+    .ck_portal_schematic {
+      aspect-ratio: 4/3;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 240, 255, 0.12);
+      background: rgba(6, 8, 12, 0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 240, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ck_schematic_circle {
+      width: 200px;
+      height: 200px;
+      border: 1px dashed rgba(0, 240, 255, 0.2);
+      border-radius: 50%;
+      position: relative;
+      animation: ck_schematic_rotate 25s linear infinite;
+    }
+
+    .ck_schematic_inner {
+      width: 130px;
+      height: 130px;
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: ck_schematic_rotate_reverse 12s linear infinite;
+    }
+
+    .ck_schematic_dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: var(--sapphire-core);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--sapphire-core);
+      top: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    @keyframes ck_schematic_rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes ck_schematic_rotate_reverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    /* MANIFESTO GLASS CARD */
+    .ck_portal_card {
+      background: rgb(34 153 255 / 10%);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .ck_portal_para {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: #cbd5e1;
+      margin-bottom: 1.5rem;
+    }
+
+    /* SERVICES CATALOG GRID */
+    .ck_services_grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .ck_services_grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .ck_services_grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ck_service_card {
+      background: rgba(10, 15, 30, 0.55);
+      border: 1px solid rgba(0, 240, 255, 0.12);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                  border-color 0.4s ease, 
+                  box-shadow 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .ck_service_card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(0, 240, 255, 0.45);
+      box-shadow: 0 12px 30px rgba(0, 240, 255, 0.08);
+    }
+
+    .ck_service_icon {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: rgba(0, 240, 255, 0.04);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      color: var(--sapphire-core);
+      margin-bottom: 0.25rem;
+      transition: background 0.3s, color 0.3s;
+    }
+    .ck_service_card:hover .ck_service_icon {
+      background: rgba(0, 240, 255, 0.1);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+    }
+
+    .ck_service_category {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #a78bfa;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    .ck_service_title {
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--text-pure);
+    }
+
+    .ck_service_desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    /* TARGET PROFILE CARDS */
+    .ck_target_grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .ck_target_grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ck_target_card {
+      background: rgb(34 153 255 / 8%);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: 18px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .ck_target_status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      font-family: monospace;
+      color: #00ff7f;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .ck_target_status_dot {
+      width: 6px;
+      height: 6px;
+      background: #00ff7f;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00ff7f;
+      animation: ck_neonpulse 2s infinite ease-in-out;
+    }
+
+    .ck_target_metrics {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.12);
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--sapphire-core);
+      letter-spacing: 1px;
+    }
+
+    /* COMPATIBILITY EXCLUSIONS GRID */
+    .ck_exclusion_grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .ck_exclusion_grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ck_exclusion_card {
+      background: rgba(236, 72, 153, 0.02);
+      border: 1px solid rgba(236, 72, 153, 0.12);
+      border-radius: 14px;
+      padding: 2rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .ck_exclusion_status {
+      font-family: monospace;
+      font-size: 0.65rem;
+      color: #ec4899;
+      letter-spacing: 1.5px;
+      border: 1px solid rgba(236, 72, 153, 0.25);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .ck_exclusion_text {
+      font-size: 1rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* STATS DASHBOARD & EXPERIENCE */
+    .ck_stats_dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    @media (max-width: 768px) {
+      .ck_stats_dashboard {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    .ck_stat_node {
+      background: rgba(10, 15, 30, 0.4);
+      border: 1px solid rgba(0, 240, 255, 0.12);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .ck_stat_value {
+      font-size: 3.2rem;
+      font-weight: 300;
+      color: var(--text-pure);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+      margin-bottom: 0.5rem;
+    }
+
+    .ck_stat_label {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* FEATURED PARTNER CARD */
+    .ck_case_study_card {
+      background: rgba(10, 15, 30, 0.65);
+      border: 1px dashed rgba(0, 240, 255, 0.2);
+      border-radius: 20px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 3.5rem;
+      align-items: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 768px) {
+      .ck_case_study_card {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        padding: 2rem;
+      }
+    }
+
+    .ck_case_badge {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.65rem;
+      background: var(--brand-arch);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 0.35rem 0.85rem;
+      border-radius: 50px;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+    }
+
+    /* SYSTEM CTA PORTAL */
+    .ck_cta_card {
+      background: linear-gradient(135deg, rgba(70, 44, 125, 0.2), rgba(6, 8, 12, 0.7));
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 24px;
+      padding: 5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .ck_cta_card {
+        padding: 4rem 2rem;
+      }
+    }
+
+    .ck_cta_glow {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, rgba(6, 8, 12, 0) 70%);
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      filter: blur(50px);
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       SPLINE 3D CRYSTAL BACKGROUND LAYER
+       ========================================================================== */
+    #canvas3d {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    #canvas3d.spline-visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="ck_nebula_body">
+
+  <!-- SPLINE 3D CRYSTAL FIXED BACKGROUND -->
+  <canvas id="canvas3d"></canvas>
+
+  <div class="ck_top_progress_bar" id="ck_top_progress_bar"></div>
+
+  <div class="ck_hero_scroll_wrapper">
+    <main class="ck_nebula_hero">
+    
+    <div class="ck_nebula_canvas_container">
+      <canvas id="ck_nebula_canvas_renderer"></canvas>
+    </div>
+
+    <div class="ck_state_vignette_overlay" id="ck_vignette_engine"></div>
+
+    <div class="ck_parallax_layer" id="ck_parallax_layer_shallow">
+      <div class="ck_parallax_asset asset_layer_shallow"></div>
+    </div>
+    <div class="ck_parallax_layer" id="ck_parallax_layer_deep">
+      <div class="ck_parallax_asset asset_layer_deep"></div>
+    </div>
+
+    <div class="ck_nebula_orb ck_orb_sapphire"></div>
+    <div class="ck_nebula_orb ck_orb_purple"></div>
+
+    <section id="ck_nebula_master_grid" class="ck_nebula_grid ck_state_1_active">
+      
+      <div class="ck_nebula_left_panel">
+        <div class="ck_nebula_pretag">
+          <div class="ck_nebula_pulse_node"></div>
+          <span>Brixen Systems — UK, US, Ireland, Canada</span>
+        </div>
+
+        <h1 class="ck_nebula_title">
+          Systems<br>
+          <span class="ck_nebula_title_dim">That Work.</span>
+        </h1>
+
+        <div class="ck_nebula_divider"></div>
+
+        <p class="ck_nebula_sub" id="ck_typing_target"></p>
+
+        <div class="ck_nebula_actions">
+          <a href="/contact" class="ck_nebula_btn ck_nebula_btn_primary" data-magnetic>
+            <span class="ck_nebula_btn_text">Book a Discovery Call</span>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3l3.5 3.5L7.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="ck_nebula_right_panel">
+        
+        <div class="ck_nebula_sticky_header">
+          <span class="ck_nebula_intro_tag">Our Architecture</span>
+          <h2 class="ck_nebula_intro_heading">Three outcomes.<br>Every service we offer feeds into one of them.</h2>
+        </div>
+
+        <div class="ck_nebula_outcomes_window">
+          
+          <div class="ck_nebula_state_block" data-content="2">
+            <div class="ck_nebula_card">
+              <div class="ck_nebula_card_num">01</div>
+              <h3 class="ck_nebula_card_title">Generate Pipeline</h3>
+              <p class="ck_nebula_card_desc">Build a consistent, qualified flow of discovery calls from the right businesses — using outreach, content, and paid channels working together.</p>
+              <ul class="ck_nebula_tag_list">
+                <li>LinkedIn Outreach</li>
+                <li>Email Marketing</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ck_nebula_state_block" data-content="3">
+            <div class="ck_nebula_card">
+              <div class="ck_nebula_card_num">02</div>
+              <h3 class="ck_nebula_card_title">Build the System</h3>
+              <p class="ck_nebula_card_desc">Engineer the infrastructure underneath your growth — so the pipeline converts, the team has visibility, and revenue becomes predictable.</p>
+              <ul class="ck_nebula_tag_list">
+                <li>Growth and RevOps</li>
+                <li>CRO</li>
+                <li>AI Automation</li>
+                <li>Web Development</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ck_nebula_state_block" data-content="4">
+            <div class="ck_nebula_card">
+              <div class="ck_nebula_card_num">03</div>
+              <h3 class="ck_nebula_card_title">Scale the Operation</h3>
+              <p class="ck_nebula_card_desc">Position the brand properly, establish the identity, and build the partner infrastructure that lets you grow without growing the headcount.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <div class="ck_nebula_footer">
+      <div class="ck_footer_left_group">
+        <div class="ck_nebula_scroll_track">
+          <div class="ck_nebula_scroll_bar" id="ck_nebula_progress_bar"></div>
+        </div>
+        <span id="ck_nebula_state_num">01</span>
+        <span class="ck_nebula_footer_text">Growth, Engineered.</span>
+      </div>
+
+      <div class="ck_hud_reveal_indicator" id="ck_scroll_indicator">
+        <span>Scroll to Reveal</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="ck_portal_content ck_portal_grid_bg">
+  
+  <!-- SECTION 1: MANIFESTO -->
+  <section class="ck_portal_section ck_portal_split ckgame-right" id="ck_section_manifesto">
+    <div class="ck_portal_schematic">
+      <div class="ck_schematic_circle">
+        <div class="ck_schematic_inner">
+          <div class="ck_schematic_dot"></div>
+        </div>
+        <svg style="position:absolute; width:100%; height:100%; top:0; left:0; transform: rotate(45deg); opacity:0.15;" viewBox="0 0 100 100">
+          <line x1="10" y1="50" x2="90" y2="50" stroke="var(--sapphire-core)" stroke-width="0.5" />
+          <line x1="50" y1="10" x2="50" y2="90" stroke="var(--sapphire-core)" stroke-width="0.5" />
+          <circle cx="50" cy="50" r="30" fill="none" stroke="var(--sapphire-core)" stroke-width="0.5" stroke-dasharray="2,2" />
+        </svg>
+        <div style="position:absolute; font-family:monospace; font-size:0.6rem; color:var(--sapphire-core); opacity:0.5; top:15px; left:50%; transform:translateX(-50%);">SYS_CORE_ACTIVE</div>
+      </div>
+    </div>
+    <div>
+      <div class="ck_portal_tag"><div class="ck_nebula_pulse_node"></div>[ PROTOCOL // MANIFESTO ]</div>
+      <h2 class="ck_portal_heading">We are a growth company.<br><span class="ck_text_glow_cyan">Not an agency.</span></h2>
+      <div class="ck_portal_card">
+        <p class="ck_portal_para">Brixen Systems is a growth company for businesses that take growth seriously. <strong class="ck_type_emphasis" style="color:#ffffff;">We build the systems. You scale the business.</strong></p>
+        <p class="ck_portal_para" style="margin-bottom:0;">We do not work with every business. We work with the right ones. The right businesses understand that sustainable growth is not a campaign. It is infrastructure. They are done with partners who optimise for activity and report on metrics that do not move revenue. They want someone who is as accountable to outcomes as they are.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: SERVICES DIRECTORY -->
+  <section class="ck_portal_section ckgame-mid" id="ck_section_services">
+    <div class="ck_portal_tag"><div class="ck_nebula_pulse_node"></div>[ DIRECTORY // CAPABILITIES ]</div>
+    <h2 class="ck_portal_heading">Every service.<br><span class="ck_text_glow_cyan">Standalone or fully integrated.</span></h2>
+    <p class="ck_portal_para" style="max-width: 700px; margin-bottom: 3.5rem;">Each service delivers independently. Together they form a complete growth system. Most clients start with one and expand as results compound.</p>
+    
+    <div class="ck_services_grid">
+      
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </div>
+        <span class="ck_service_category">Pipeline Gen</span>
+        <h3 class="ck_service_title">LinkedIn Outreach</h3>
+        <p class="ck_service_desc">Profile optimisation, content strategy, outreach sequences, and DM management that books qualified calls.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </div>
+        <span class="ck_service_category">Pipeline Gen</span>
+        <h3 class="ck_service_title">Email Marketing</h3>
+        <p class="ck_service_desc">Cold outreach, nurture sequences, and lifecycle campaigns that land in the inbox and generate replies.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+        </div>
+        <span class="ck_service_category">Paid Media</span>
+        <h3 class="ck_service_title">LinkedIn Ads</h3>
+        <p class="ck_service_desc">Campaign strategy, audience build, creative, and ongoing optimisation for B2B paid demand generation.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <span class="ck_service_category">Organic Growth</span>
+        <h3 class="ck_service_title">SEO & GEO</h3>
+        <p class="ck_service_desc">Technical SEO, content strategy, and AI search optimisation for Google, ChatGPT, Perplexity, and AI Overviews.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        </div>
+        <span class="ck_service_category">RevOps</span>
+        <h3 class="ck_service_title">Growth & RevOps</h3>
+        <p class="ck_service_desc">GTM strategy, pipeline architecture, CRM setup, and the RevOps infrastructure that makes growth predictable.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+        </div>
+        <span class="ck_service_category">Conversion</span>
+        <h3 class="ck_service_title">CRO</h3>
+        <p class="ck_service_desc">Conversion audits, A/B testing, landing page optimisation, and funnel improvements that increase yield from existing traffic.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2V10"></path><path d="M18 8V14"></path><path d="M6 6V16"></path><rect x="2" y="16" width="20" height="4" rx="1"></rect></svg>
+        </div>
+        <span class="ck_service_category">Automation</span>
+        <h3 class="ck_service_title">AI Automation</h3>
+        <p class="ck_service_desc">Workflow automation, AI agent build, process systemisation, and consulting for businesses implementing AI internally.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        </div>
+        <span class="ck_service_category">Build</span>
+        <h3 class="ck_service_title">Web & App Dev</h3>
+        <p class="ck_service_desc">Full-stack web and application development. Landing pages, custom builds, and tools that support growth infrastructure.</p>
+      </div>
+
+      <div class="ck_service_card">
+        <div class="ck_service_icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        </div>
+        <span class="ck_service_category">Brand</span>
+        <h3 class="ck_service_title">Brand Sprint</h3>
+        <p class="ck_service_desc">Fixed-scope brand identity delivered in two weeks. Positioning, visual identity, messaging — built to last.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: TARGET AUDIENCES -->
+  <section class="ck_portal_section ckgame-left" id="ck_section_target">
+    <div class="ck_portal_tag"><div class="ck_nebula_pulse_node"></div>[ TARGET // SEGMENTATION ]</div>
+    <h2 class="ck_portal_heading">We do not work with every business.<br><span class="ck_text_glow_cyan">We work with the right ones.</span></h2>
+    
+    <div class="ck_target_grid">
+      
+      <div class="ck_target_card">
+        <div class="ck_target_status"><div class="ck_target_status_dot"></div>FOUNDER_ALIGNMENT: PASS</div>
+        <h3 class="ck_service_title">The Founder</h3>
+        <p class="ck_service_desc">Doing everything yourself and running out of runway to keep doing it. You have proven the business works. Now you need the system that takes growth off your plate.</p>
+        <div class="ck_target_metrics">REVENUE: $10K–$50K MONTHLY</div>
+      </div>
+
+      <div class="ck_target_card">
+        <div class="ck_target_status"><div class="ck_target_status_dot"></div>SCALING_ALIGNMENT: PASS</div>
+        <h3 class="ck_service_title">The Scaling Business</h3>
+        <p class="ck_service_desc">Growing — but the system underneath cannot keep up with the pace. Pipeline is inconsistent, forecasting is guesswork, and deal blockages are invisible.</p>
+        <div class="ck_target_metrics">TEAM: 5–50 PEOPLE</div>
+      </div>
+
+      <div class="ck_target_card">
+        <div class="ck_target_status"><div class="ck_target_status_dot"></div>MARKETER_ALIGNMENT: PASS</div>
+        <h3 class="ck_service_title">The Marketing Leader</h3>
+        <p class="ck_service_desc">Has a team, has tools, but the funnel is broken somewhere. Leads are generated but not converting. You need a partner who diagnoses the system and fixes it.</p>
+        <div class="ck_target_metrics">SECTOR: B2B / ALL SECTORS</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: EXCLUSIONS (WHO WE ARE NOT FOR) -->
+  <section class="ck_portal_section ckgame-right" id="ck_section_exclusions">
+    <div class="ck_portal_tag"><div class="ck_nebula_pulse_node"></div>[ PROTOCOL // COMPATIBILITY ]</div>
+    <h2 class="ck_portal_heading">We are selective.<br><span class="ck_text_glow_cyan">Here is who we do not take on.</span></h2>
+    
+    <div class="ck_exclusion_grid">
+      
+      <div class="ck_exclusion_card">
+        <div class="ck_exclusion_status">CODE // EXCL_01</div>
+        <div class="ck_exclusion_text">Businesses looking for a one-off campaign with no interest in building a sustainable system.</div>
+      </div>
+
+      <div class="ck_exclusion_card">
+        <div class="ck_exclusion_status">CODE // EXCL_02</div>
+        <div class="ck_exclusion_text">Founders who want vanity metrics reported as success instead of actual closed revenue.</div>
+      </div>
+
+      <div class="ck_exclusion_card">
+        <div class="ck_exclusion_status">CODE // EXCL_03</div>
+        <div class="ck_exclusion_text">Businesses not willing to participate and be involved in the process of mapping growth loops.</div>
+      </div>
+
+      <div class="ck_exclusion_card">
+        <div class="ck_exclusion_status">CODE // EXCL_04</div>
+        <div class="ck_exclusion_text">Anyone expecting immediate, compounding outcomes in week one without the underlying infrastructure.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 5: PERFORMANCE TELEMETRY & EXPERIENCE -->
+  <section class="ck_portal_section ckgame-mid" id="ck_section_experience">
+    <div class="ck_portal_tag"><div class="ck_nebula_pulse_node"></div>[ PERFORMANCE // EXPERIENCE ]</div>
+    <h2 class="ck_portal_heading">Real work. Real businesses.<br><span class="ck_text_glow_cyan">Real geographies.</span></h2>
+    
+    <div class="ck_stats_dashboard">
+      <div class="ck_stat_node">
+        <div class="ck_stat_value">£1M+</div>
+        <div class="ck_stat_label">Contributed to pipeline</div>
+      </div>
+      <div class="ck_stat_node">
+        <div class="ck_stat_value">18mo</div>
+        <div class="ck_stat_label">Avg GTM setup engagement</div>
+      </div>
+      <div class="ck_stat_node">
+        <div class="ck_stat_value">Global</div>
+        <div class="ck_stat_label">IE, Qatar, Dubai Markets</div>
+      </div>
+    </div>
+
+    <div class="ck_case_study_card">
+      <div>
+        <span class="ck_case_badge">FEATURED PARTNER ENGAGEMENT</span>
+        <h3 class="ck_service_title" style="font-size:1.6rem; margin-bottom:1rem;">Westport Consulting & Advisory — Ireland</h3>
+        <p class="ck_portal_para" style="font-size:1rem; margin-bottom:0;">An SAP consulting firm targeting B2B SMB and mid-market businesses. We engineered their complete pipeline infrastructure and go-to-market motion over an 18-month engagement, establishing a predictable revenue channel.</p>
+      </div>
+      <div style="border-left: 1px dashed rgba(0, 240, 255, 0.2); padding-left: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-family:monospace; font-size:0.75rem; color:#cbd5e1;">[ FRAMEWORK: PLATFORM_AGNOSTIC ]</div>
+        <p class="ck_portal_para" style="font-size:0.9rem; margin-bottom:0;">We build and scale within your existing CRM setup. The systems logic matters, not the subscription:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; font-family:monospace; font-size:0.7rem; color:var(--sapphire-core);">
+          <span>HUBSPOT</span> // <span>SALESFORCE</span> // <span>PIPEDRIVE</span> // <span>MARKETO</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: GET STARTED CTA -->
+  <section class="ck_portal_section ckgame-mid" id="ck_section_cta" style="margin-bottom: 4rem;">
+    <div class="ck_cta_card">
+      <div class="ck_cta_glow"></div>
+      <div class="ck_portal_tag" style="justify-content:center; margin-bottom:1.5rem;"><div class="ck_nebula_pulse_node"></div>[ SYSTEM // INITIALIZE_DISCOVERY ]</div>
+      <h2 class="ck_portal_heading" style="font-size:3.5rem; font-weight:300; margin-bottom:1.5rem; line-height:1.1;">Systems That Work.<br><span class="ck_text_glow_cyan" style="font-weight:500;">For businesses that do.</span></h2>
+      <p class="ck_portal_para" style="max-width: 600px; margin: 0 auto 3rem auto; font-size:1.1rem; color:#e2e8f0;">Book a 30-minute discovery call. We will ask the right questions, tell you honestly whether we are the right fit, and outline exactly what we would build for you.</p>
+      
+      <div class="ck_nebula_actions" style="justify-content:center; gap:2rem; flex-wrap:wrap;">
+        <a href="/contact" class="ck_nebula_btn ck_nebula_btn_primary" data-magnetic>
+          <span class="ck_nebula_btn_text">Book a Discovery Call</span>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3l3.5 3.5L7.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </a>
+        <a href="#ck_section_services" class="ck_nebula_btn" style="border: 1px solid rgba(255, 255, 255, 0.15); color: #ffffff;" data-magnetic>
+          <span class="ck_nebula_btn_text">Explore all services</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+      <p style="font-family:monospace; font-size:0.75rem; color:#4a5568; margin-top:2.5rem; letter-spacing:1px; text-transform:uppercase;">No obligation. No pitch deck. Just a straight conversation.</p>
+    </div>
+  </section>
+
+</div>
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script src="https://unpkg.com/lenis@1.3.23/dist/lenis.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const totalFrames = 26;
+      
+      const statesMap = {
+        1: 1,   
+        2: 4,   
+        3: 17,  
+        4: 26   
+      };
+
+      const stateColors = {
+        1: "0, 240, 255",   
+        2: "139, 92, 246",  
+        3: "236, 72, 153",  
+        4: "0, 255, 127"    
+      };
+
+      let activePart = 1;
+      let currentFrame = 1;
+      let targetFrame = 1;
+
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetMouseX = 0;
+      let targetMouseY = 0;
+      const canvasParallaxIntensity = 35;
+
+      const masterGrid = document.getElementById("ck_nebula_master_grid");
+      const canvas = document.getElementById("ck_nebula_canvas_renderer");
+      const ctx = canvas.getContext("2d");
+      const vignetteOverlay = document.getElementById("ck_vignette_engine");
+      
+      const parallaxLayerShallow = document.getElementById("ck_parallax_layer_shallow");
+      const parallaxLayerDeep = document.getElementById("ck_parallax_layer_deep");
+      
+      const contentBlocks = document.querySelectorAll(".ck_nebula_state_block");
+      const progressBar = document.getElementById("ck_nebula_progress_bar");
+      const topProgressBar = document.getElementById("ck_top_progress_bar");
+      const stateCounter = document.getElementById("ck_nebula_state_num");
+      const scrollIndicator = document.getElementById("ck_scroll_indicator");
+      const magneticButtons = document.querySelectorAll("[data-magnetic]");
+
+      const imageMeta = {
+        base: "https://github.com/bbfades37-sudo/ore/blob/main/frames/4/ezgif-frame-",
+        ext: ".png?raw=true"
+      };
+
+      const typingTarget = document.getElementById("ck_typing_target");
+      
+      const textSegments = [
+        { text: "Most businesses do not have a growth problem. ", style: "normal" },
+        { text: "They have a system problem. ", style: "emphasis" },
+        { text: "We build the systems that fill your pipeline and keep it full.", style: "normal" }
+      ];
+
+      let charQueue = [];
+      textSegments.forEach(segment => {
+        for (let i = 0; i < segment.text.length; i++) {
+          charQueue.push({
+            char: segment.text[i],
+            style: segment.style
+          });
+        }
+      });
+
+      let currentQueueIndex = 0;
+      
+      const laserCursor = document.createElement("span");
+      laserCursor.className = "ck_rainbow_laser_cursor";
+      typingTarget.appendChild(laserCursor);
+
+      function runLaserTypingSequence() {
+        if (currentQueueIndex < charQueue.length) {
+          const item = charQueue[currentQueueIndex];
+          
+          const letterNode = document.createElement("span");
+          if (item.style === "emphasis") {
+            letterNode.className = "ck_type_emphasis";
+          }
+          letterNode.textContent = item.char;
+
+          typingTarget.insertBefore(letterNode, laserCursor);
+          currentQueueIndex++;
+          
+          let dynamicDelay = item.char === "." || item.char === "?" ? 450 : Math.random() * 25 + 20;
+          setTimeout(runLaserTypingSequence, dynamicDelay);
+        }
+      }
+      setTimeout(runLaserTypingSequence, 800);
+
+      const frameImages = [];
+      let loadedCount = 0;
+      let isReady = false;
+
+      for (let i = 1; i <= totalFrames; i++) {
+        const img = new Image();
+        let frameNumStr = String(i).padStart(3, '0');
+        img.src = `${imageMeta.base}${frameNumStr}${imageMeta.ext}`;
+        img.onload = () => {
+          loadedCount++;
+          if (loadedCount === totalFrames) {
+            isReady = true;
+            resizeCanvas(); 
+          }
+        };
+        frameImages[i] = img;
+      }
+
+      function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+
+  renderCanvasFrame(Math.round(currentFrame));
+}
+      window.addEventListener('resize', resizeCanvas);
+
+      window.addEventListener("mousemove", (e) => {
+        targetMouseX = (e.clientX / window.innerWidth) - 0.5;
+        targetMouseY = (e.clientY / window.innerHeight) - 0.5;
+      });
+
+     function renderCanvasFrame1(frameIndex) {
+  const img = frameImages[frameIndex];
+  if (!img || !img.complete) return;
+
+  const canvasWidth = window.innerWidth;
+  const canvasHeight = window.innerHeight;
+
+  const imgWidth = img.naturalWidth || img.width;
+  const imgHeight = img.naturalHeight || img.height;
+
+  // Fit image inside viewport but never upscale
+  const scale = Math.min(
+    1,
+    Math.min(
+      canvasWidth / imgWidth,
+      canvasHeight / imgHeight
+    )
+  );
+
+  const drawWidth = imgWidth * scale;
+  const drawHeight = imgHeight * scale;
+
+  const drawX =
+    (canvasWidth - drawWidth) / 2 +
+    (mouseX * 20);
+
+  const drawY =
+    (canvasHeight - drawHeight) / 2 +
+    (mouseY * 20);
+
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  ctx.drawImage(
+    img,
+    drawX,
+    drawY,
+    drawWidth,
+    drawHeight
+  );
+}
+    function renderCanvasFrame(frameIndex) {
+  const img = frameImages[frameIndex];
+  if (!img || !img.complete) return;
+
+  const canvasWidth = window.innerWidth;
+  const canvasHeight = window.innerHeight;
+
+  const imgWidth = img.naturalWidth || img.width;
+  const imgHeight = img.naturalHeight || img.height;
+ const isPortraitMobile = canvasHeight > canvasWidth;
+
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  let drawWidth, drawHeight, drawX, drawY;
+
+  if (isPortraitMobile) {
+    // 🔥 MOBILE: center crop (NO aspect fit, NO letterbox)
+    const scale = Math.max(
+      canvasWidth / imgWidth,
+      canvasHeight / imgHeight
+    );
+
+    drawWidth = imgWidth * scale;
+    drawHeight = imgHeight * scale;
+
+    drawX =
+      (canvasWidth - drawWidth) / 2 +
+      (mouseX * 10); // smaller parallax on mobile
+
+    drawY =
+      (canvasHeight - drawHeight) / 2 +
+      (mouseY * 10);
+
+  }else{
+  // Fit image inside viewport but never upscale
+  const scale = Math.min(
+    1,
+    Math.min(
+      canvasWidth / imgWidth,
+      canvasHeight / imgHeight
+    )
+  );
+
+   drawWidth = imgWidth * scale;
+   drawHeight = imgHeight * scale;
+
+   drawX =
+    (canvasWidth - drawWidth) / 2 +
+    (mouseX * 20);
+
+   drawY =
+    (canvasHeight - drawHeight) / 2 +
+    (mouseY * 20);
+}
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  ctx.drawImage(
+    img,
+    drawX,
+    drawY,
+    drawWidth,
+    drawHeight
+  );
+  
+}
+function renderCanvasFrame2(frameIndex) {
+  const img = frameImages[frameIndex];
+  if (!img || !img.complete) return;
+
+  const canvasWidth = window.innerWidth;
+  const canvasHeight = window.innerHeight;
+
+  const imgWidth = img.naturalWidth || img.width;
+  const imgHeight = img.naturalHeight || img.height;
+
+  const isPortraitMobile = canvasHeight > canvasWidth;
+
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  let drawWidth, drawHeight, drawX, drawY;
+
+  if (isPortraitMobile) {
+    // 🔥 MOBILE: center crop (NO aspect fit, NO letterbox)
+    const scale = Math.max(
+      canvasWidth / imgWidth,
+      canvasHeight / imgHeight
+    );
+
+    drawWidth = imgWidth * scale;
+    drawHeight = imgHeight * scale;
+
+    drawX =
+      (canvasWidth - drawWidth) / 2 +
+      (mouseX * 10); // smaller parallax on mobile
+
+    drawY =
+      (canvasHeight - drawHeight) / 2 +
+      (mouseY * 10);
+
+  } else {
+    // 💻 DESKTOP: your original cinematic cover behavior
+    const padding = canvasParallaxIntensity * 2;
+
+    const imgRatio = imgWidth / imgHeight;
+    const canvasRatio = canvasWidth / canvasHeight;
+
+    if (canvasRatio > imgRatio) {
+      drawWidth = canvasWidth + padding;
+      drawHeight = (canvasWidth + padding) / imgRatio;
+    } else {
+      drawWidth = (canvasHeight + padding) * imgRatio;
+      drawHeight = canvasHeight + padding;
+    }
+
+    drawX =
+      ((canvasWidth - drawWidth) / 2) +
+      (mouseX * canvasParallaxIntensity);
+
+    drawY =
+      ((canvasHeight - drawHeight) / 2) +
+      (mouseY * canvasParallaxIntensity);
+  }
+
+  ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+}
+      const lenis = new Lenis({
+        duration: 1.2,
+        lerp: 0.08, 
+        wheelMultiplier: 1.1,
+        infinite: false
+      });
+
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      function updateInterfaceLayout(newPart) {
+        activePart = newPart;
+
+        if (activePart === 1) {
+          masterGrid.classList.add("ck_state_1_active");
+        } else {
+          masterGrid.classList.remove("ck_state_1_active");
+        }
+
+        contentBlocks.forEach(block => {
+          const blockPart = parseInt(block.getAttribute("data-content"));
+          if (blockPart === activePart) {
+            block.classList.add("ck_nebula_visible");
+          } else {
+            block.classList.remove("ck_nebula_visible");
+          }
+        });
+
+        stateCounter.textContent = `0${activePart}`;
+        const translatePct = (activePart - 1) * 100;
+        progressBar.style.transform = `translateX(${translatePct}%)`;
+
+        vignetteOverlay.style.setProperty('--vignette-color', stateColors[activePart]);
+      }
+
+      function updateFrameTimeline() {
+        let frameGap = targetFrame - currentFrame;
+        
+        mouseX += (targetMouseX - mouseX) * 0.07;
+        mouseY += (targetMouseY - mouseY) * 0.07;
+
+        if (parallaxLayerShallow) {
+          let transX = mouseX * -65; 
+          let transY = mouseY * -65;
+          parallaxLayerShallow.style.transform = `translate3d(${transX}px, ${transY}px, 0)`;
+        }
+        
+        if (parallaxLayerDeep) {
+          let transX = mouseX * 25; 
+          let transY = mouseY * 25;
+          parallaxLayerDeep.style.transform = `translate3d(${transX}px, ${transY}px, 0)`;
+        }
+
+        let needsRender = false;
+
+        if (Math.abs(frameGap) > 0.005) {
+          let speedFactor = 0.09;
+          if (Math.abs(frameGap) > 6) {
+            speedFactor = 0.045; 
+          }
+
+          currentFrame += frameGap * speedFactor;
+          needsRender = true;
+
+          let detectedPart = 1;
+          if (Math.round(currentFrame) === 1) {
+            detectedPart = 1;
+          } else if (Math.round(currentFrame) > 1 && Math.round(currentFrame) <= statesMap[2]) {
+            detectedPart = 2;
+          } else if (Math.round(currentFrame) > statesMap[2] && Math.round(currentFrame) <= statesMap[3]) {
+            detectedPart = 3;
+          } else if (Math.round(currentFrame) > statesMap[3]) {
+            detectedPart = 4;
+          }
+
+          if (detectedPart !== activePart) {
+            updateInterfaceLayout(detectedPart);
+          }
+        }
+
+        if (isReady && (needsRender || Math.abs(targetMouseX - mouseX) > 0.001 || Math.abs(targetMouseY - mouseY) > 0.001)) {
+          let renderFrame = Math.max(1, Math.min(totalFrames, Math.round(currentFrame)));
+          renderCanvasFrame(renderFrame);
+        }
+
+        requestAnimationFrame(updateFrameTimeline);
+      }
+      requestAnimationFrame(updateFrameTimeline);
+
+      lenis.on('scroll', (e) => {
+        const heroWrapper = document.querySelector(".ck_hero_scroll_wrapper");
+        let pct = 0;
+        if (heroWrapper) {
+          const rect = heroWrapper.getBoundingClientRect();
+          const scrollHeight = heroWrapper.offsetHeight - window.innerHeight;
+          let localScroll = -rect.top;
+          pct = Math.max(0, Math.min(1, localScroll / (scrollHeight || 1)));
+        } else {
+          pct = e.progress;
+        }
+        
+        if (topProgressBar) {
+          topProgressBar.style.width = (e.progress * 100) + "%";
+        }
+
+        const footer = document.querySelector(".ck_nebula_footer");
+        if (footer) {
+          if (pct >= 0.98) {
+            footer.style.opacity = "0";
+            footer.style.pointerEvents = "none";
+          } else {
+            footer.style.opacity = "1";
+            footer.style.pointerEvents = "auto";
+          }
+        }
+
+        let calculatedTarget = 1;
+
+        if (pct > 0.02) {
+          scrollIndicator.classList.add("ck_hidden");
+        } else {
+          scrollIndicator.classList.remove("ck_hidden");
+        }
+
+        if (pct <= 0.05) {
+          calculatedTarget = 1;
+        } else if (pct > 0.05 && pct <= 0.35) {
+          let subPct = (pct - 0.05) / 0.30;
+          calculatedTarget = statesMap[1] + (subPct * (statesMap[2] - statesMap[1]));
+        } else if (pct > 0.35 && pct <= 0.70) {
+          let subPct = (pct - 0.35) / 0.35;
+          calculatedTarget = statesMap[2] + (subPct * (statesMap[3] - statesMap[2]));
+        } else {
+          let subPct = (pct - 0.70) / 0.30;
+          calculatedTarget = statesMap[3] + (subPct * (statesMap[4] - statesMap[3]));
+        }
+
+        targetFrame = Math.max(1, Math.min(totalFrames, calculatedTarget));
+      });
+
+      magneticButtons.forEach((btn) => {
+        btn.addEventListener("mousemove", (e) => {
+          const bound = btn.getBoundingClientRect();
+          const x = e.clientX - bound.left - bound.width / 2;
+          const y = e.clientY - bound.top - bound.height / 2;
+
+          const strength = 14; 
+          const moveX = (x / bound.width) * strength;
+          const moveY = (y / bound.height) * strength;
+
+          btn.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+        });
+
+        btn.addEventListener("mouseleave", () => {
+          btn.style.transform = `translate3d(0px, 0px, 0px)`;
+        });
+      });
+    });
+  </script>
+
+  <!-- =================================================================
+       SPLINE 3D CRYSTAL — SCROLL-DRIVEN POSITION + ROTATION ENGINE
+       Fades in after hero, moves left/right/center per portal section
+       ================================================================= -->
+  <script type="module">
+    gsap.registerPlugin(ScrollTrigger);
+
+    async function initSpline() {
+
+      const { Application } = await import(
+        "https://unpkg.com/@splinetool/runtime/build/runtime.js"
+      );
+
+      const canvas = document.getElementById("canvas3d");
+      const app = new Application(canvas);
+
+      await app.load(
+        "https://prod.spline.design/KR9Dsaebp0yPgieZ/scene.splinecode"
+      );
+
+      const obj = app.findObjectByName("crys");
+
+      if (!obj) {
+        console.warn("Spline object 'crys' not found");
+        return;
+      }
+
+      /* ------------------------------------------------
+         POSITION MAP — x offset in Spline scene units
+         ------------------------------------------------ */
+      const POSITIONS = {
+        "ckgame-right": 250,
+        "ckgame-mid":     0,
+        "ckgame-left":  -250
+      };
+
+      /* Reactive controller that GSAP tweens into */
+      const controller = { x: 250 };
+
+      /* Push live position every frame via GSAP ticker */
+      gsap.ticker.add(() => {
+        obj.position.x = controller.x;
+      });
+
+      /* Smooth snap helper */
+      function snapTo(x) {
+        gsap.to(controller, {
+          x,
+          duration: 1,
+          ease: "power2.out",
+          overwrite: true
+        });
+      }
+
+      /* ------------------------------------------------
+         FADE IN — once hero scroll wrapper leaves view
+         ------------------------------------------------ */
+      ScrollTrigger.create({
+        trigger: ".ck_portal_content",
+        start: "top 80%",
+        onEnter: ()      => canvas.classList.add("spline-visible"),
+        onLeaveBack: ()  => canvas.classList.remove("spline-visible")
+      });
+
+      /* ------------------------------------------------
+         HORIZONTAL POSITION TRIGGERS — portal sections
+         ------------------------------------------------ */
+      document.querySelectorAll(".ckgame-right, .ckgame-mid, .ckgame-left")
+        .forEach(section => {
+          let targetX = 0;
+          if (section.classList.contains("ckgame-right")) targetX = POSITIONS["ckgame-right"];
+          else if (section.classList.contains("ckgame-mid"))  targetX = POSITIONS["ckgame-mid"];
+          else if (section.classList.contains("ckgame-left")) targetX = POSITIONS["ckgame-left"];
+
+          ScrollTrigger.create({
+            trigger: section,
+            start: "top center",
+            end: "bottom center",
+            onEnter:     () => snapTo(targetX),
+            onEnterBack: () => snapTo(targetX)
+          });
+        });
+
+      /* ------------------------------------------------
+         CONTINUOUS Y-ROTATION tied to total page scroll
+         ------------------------------------------------ */
+      gsap.to(obj.rotation, {
+        y: Math.PI * 2,
+        ease: "none",
+        scrollTrigger: {
+          trigger: document.body,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: true
+        }
+      });
+    }
+
+    initSpline();
+  </script>
+
+</body>
+</html>
 
