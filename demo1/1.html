@@ -1652,7 +1652,23 @@
     drawWidth,
     drawHeight
   );
-  
+  // 🔲 BLACK RECT (bottom-right overlay)
+  const boxW = 200;
+  const boxH = 120;
+  const padding = -10;
+
+  //const bx = canvasWidth - boxW - padding;
+  //const by = canvasHeight - boxH - padding;
+  // bottom-right of the IMAGE (not canvas)
+const bx = drawX + drawWidth - boxW - padding;
+const by = drawY + drawHeight - boxH - padding;
+
+  ctx.save();
+  ctx.fillStyle = "black";
+  ctx.globalAlpha = 1; // optional
+  ctx.filter = "blur(10px)";
+  ctx.fillRect(bx, by, boxW, boxH);
+  ctx.restore();
 }
 function renderCanvasFrame2(frameIndex) {
   const img = frameImages[frameIndex];
