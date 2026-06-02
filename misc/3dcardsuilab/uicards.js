@@ -317,9 +317,6 @@ const ck_game_uicards3d_linkedin_outreach = ck_game_uicards3d_create({
   category: 'Pipeline Gen'
 });
 
-document.getElementById('wide-slot').appendChild(
-  ck_game_uicards3d_linkedin_outreach
-);
 const ck_game_uicards3d_email_marketing = ck_game_uicards3d_create({
   variant: 'prism',
   shape: 'wide',
