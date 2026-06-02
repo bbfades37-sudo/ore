@@ -486,33 +486,33 @@ const ck_game_uicards3d_brand_sprint = ck_game_uicards3d_create({
   ctaLabel: 'Brand',
   category: 'Brand'
 });
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_1').appendChild(
 ck_game_uicards3d_linkedin_outreach
   );
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_2').appendChild(
   ck_game_uicards3d_email_marketing
 );
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_3').appendChild(
   ck_game_uicards3d_linkedin_ads
 );
 
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_4').appendChild(
   ck_game_uicards3d_seo_geo
 );
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_5').appendChild(
   ck_game_uicards3d_growth_revops
 );
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_6').appendChild(
   ck_game_uicards3d_cro
 );
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_7').appendChild(
   ck_game_uicards3d_ai_automation
 );
 
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_8').appendChild(
   ck_game_uicards3d_web_app_dev
 );
 
-document.getElementById('wide-slot').appendChild(
+document.getElementById('ck_game_uicards3d_wide-slot_9').appendChild(
   ck_game_uicards3d_brand_sprint
 );
