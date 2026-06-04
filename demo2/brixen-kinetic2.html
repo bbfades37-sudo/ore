@@ -1350,64 +1350,80 @@ body{
   width: 100vw;
   margin-left: calc(-50vw + 50%);
   overflow: hidden;
-  padding: 4rem 0;
+  padding: 2.4rem 0;
   z-index: 3;
   user-select: none;
-  border-top: 1px solid rgba(0,240,255,0.08);
-  border-bottom: 1px solid rgba(0,240,255,0.08);
+  border-top: 1px solid rgba(0,240,255,0.10);
+  border-bottom: 1px solid rgba(0,240,255,0.10);
+  background:
+    radial-gradient(120% 200% at 50% 50%, rgba(0,240,255,0.10), rgba(139,92,246,0.06) 40%, rgba(0,0,0,0) 70%),
+    linear-gradient(90deg, rgba(8,10,22,0.85), rgba(14,18,38,0.85), rgba(8,10,22,0.85));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
+.ck_kinetic_marquee::before,
+.ck_kinetic_marquee::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; width: 12vw; z-index: 2; pointer-events: none;
+}
+.ck_kinetic_marquee::before { left: 0;  background: linear-gradient(90deg, rgba(8,10,22,1), rgba(8,10,22,0)); }
+.ck_kinetic_marquee::after  { right: 0; background: linear-gradient(270deg, rgba(8,10,22,1), rgba(8,10,22,0)); }
 .ck_kinetic_track {
   display: flex;
   flex-wrap: nowrap;
   white-space: nowrap;
   will-change: transform;
-  gap: 3rem;
+  gap: 2rem;
+  transition: filter .35s ease;
 }
+.ck_kinetic_marquee:hover .ck_kinetic_track { filter: blur(0.6px) saturate(1.15); }
 .ck_kinetic_word {
   font-family: var(--font-sans);
-  font-size: clamp(4rem, 12vw, 11rem);
+  font-size: clamp(2.6rem, 7.2vw, 6.4rem);
   font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
-  gap: 3rem;
+  gap: 1.4rem;
   flex-shrink: 0;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
+.ck_kinetic_word:hover { transform: translateY(-4px) scale(1.04); }
 .ck_kinetic_sep {
+  display: inline-block;
+  font-size: 0.55em;
+  transform: translateY(-0.04em);
   color: var(--sapphire-core);
-  font-size: 0.6em;
-  transform: translateY(-0.05em);
-  opacity: 0.85;
+  opacity: 0.9;
+  animation: ck_kinetic_sep_spin 6s linear infinite;
 }
-/* Variant 1 — solid white */
-.ck_kinetic_v1 .ck_kinetic_word {
-  color: var(--text-pure);
+@keyframes ck_kinetic_sep_spin { to { transform: translateY(-0.04em) rotate(360deg); } }
+
+/* Per-word variants (cycled by JS) */
+.ck_kinetic_word.is_v1 { /* outline */
+  color: transparent;
+  -webkit-text-stroke: 1.4px var(--text-pure);
+  text-stroke: 1.4px var(--text-pure);
 }
-/* Variant 2 — gradient fill */
-.ck_kinetic_v2 .ck_kinetic_word {
-  background: linear-gradient(90deg, var(--sapphire-core), #8b5cf6, var(--brand-arch), var(--sapphire-core));
-  background-size: 200% 100%;
+.ck_kinetic_word.is_v2 { /* black filled */
+  color: #000;
+  text-shadow: 0 0 0 #000;
+  -webkit-text-stroke: 0.6px rgba(255,255,255,0.25);
+}
+.ck_kinetic_word.is_v3 { /* moving theme gradient */
+  background: linear-gradient(90deg, var(--sapphire-core), #8b5cf6, var(--brand-arch), #8b5cf6, var(--sapphire-core));
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: ck_kinetic_gradient_pan 8s linear infinite;
+  animation: ck_kinetic_gradient_pan 6s linear infinite;
 }
 @keyframes ck_kinetic_gradient_pan {
   0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-/* Variant 3 — outlined / stroke only */
-.ck_kinetic_v3 .ck_kinetic_word {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--text-pure);
-  text-stroke: 1.5px var(--text-pure);
-}
-.ck_kinetic_v3 .ck_kinetic_sep {
-  -webkit-text-stroke: 1.5px var(--sapphire-core);
-  color: transparent;
+  100% { background-position: 300% 50%; }
 }
 </style>
 </head>
@@ -1566,8 +1582,8 @@ body{
   </section>
 
   <!-- KINETIC MARQUEE v1 -->
-  <div class="ck_kinetic_marquee ck_kinetic_v1" data-kinetic-marquee data-speed="60">
-    <div class="ck_kinetic_track"><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Engineered<span class="ck_kinetic_sep">✦</span>Growth<span class="ck_kinetic_sep">✦</span></span></div>
+  <div class="ck_kinetic_marquee" data-kinetic-marquee data-speed="110" data-words="Engineered|Growth" data-sep="✦">
+    <div class="ck_kinetic_track"></div>
   </div>
 
   <!-- SECTION 2: SERVICES DIRECTORY -->
@@ -1648,8 +1664,8 @@ body{
   </section>
 
   <!-- KINETIC MARQUEE v2 -->
-  <div class="ck_kinetic_marquee ck_kinetic_v2" data-kinetic-marquee data-speed="60">
-    <div class="ck_kinetic_track"><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span><span class="ck_kinetic_word">Pipeline<span class="ck_kinetic_sep">◆</span>Systems<span class="ck_kinetic_sep">◆</span></span></div>
+  <div class="ck_kinetic_marquee" data-kinetic-marquee data-speed="120" data-words="Pipeline|Systems" data-sep="◆">
+    <div class="ck_kinetic_track"></div>
   </div>
 
   <!-- SECTION 3: TARGET AUDIENCES -->
@@ -1807,8 +1823,8 @@ body{
   </section>
 
   <!-- KINETIC MARQUEE v3 -->
-  <div class="ck_kinetic_marquee ck_kinetic_v3" data-kinetic-marquee data-speed="60">
-    <div class="ck_kinetic_track"><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span><span class="ck_kinetic_word">Scale<span class="ck_kinetic_sep">✦</span>Forward<span class="ck_kinetic_sep">✦</span></span></div>
+  <div class="ck_kinetic_marquee" data-kinetic-marquee data-speed="115" data-words="Scale|Forward" data-sep="✦">
+    <div class="ck_kinetic_track"></div>
   </div>
 
 </div>
@@ -2507,47 +2523,87 @@ function updateShadows() {
 <script>
 /* ============ KINETIC MARQUEE ENGINE ============ */
 (function(){
+  const VARIANTS = ['is_v1','is_v2','is_v3']; // outline, black-filled, gradient
   const marquees = document.querySelectorAll('[data-kinetic-marquee]');
+  const wheelListeners = [];
+
   marquees.forEach(initMarquee);
+
+  // Global wheel: fan out to each marquee instance
+  let wheelStopTimer = null;
+  let scrolling = false;
+  window.addEventListener('wheel', (e) => {
+    scrolling = true;
+    const dir = e.deltaY > 0 ? -1 : 1; // scroll down -> reverse
+    const intensity = Math.min(3.2, 1 + Math.abs(e.deltaY) / 120);
+    wheelListeners.forEach(fn => fn(dir, intensity));
+    clearTimeout(wheelStopTimer);
+    wheelStopTimer = setTimeout(() => {
+      scrolling = false;
+      wheelListeners.forEach(fn => fn(0, 1)); // resume forward
+    }, 140);
+  }, { passive: true });
 
   function initMarquee(root){
     const track = root.querySelector('.ck_kinetic_track');
-    const baseSpeed = parseFloat(root.dataset.speed || '60'); // px/sec forward
+    const baseSpeed = parseFloat(root.dataset.speed || '110');
+    const words = (root.dataset.words || 'Word').split('|').map(s => s.trim()).filter(Boolean);
+    const sep = root.dataset.sep || '✦';
+
+    // Build word spans with cycling variants
+    const REPEAT = 14;
+    let html = '';
+    let idx = 0;
+    for (let i = 0; i < REPEAT; i++){
+      for (const w of words){
+        const v = VARIANTS[idx % VARIANTS.length];
+        html += `<span class="ck_kinetic_word ${v}">${w}<span class="ck_kinetic_sep">${sep}</span></span>`;
+        idx++;
+      }
+    }
+    track.innerHTML = html;
+
     let offset = 0;
-    let direction = 1;         // 1 = forward, -1 = reverse
-    let speed = baseSpeed;
-    let paused = false;
+    let direction = 1;       // 1 forward, -1 reverse
+    let speedMul = 1;        // multiplier from wheel intensity
+    let hoverMul = 1;        // 1 normal, 0.15 hover (slow not stop)
     let last = performance.now();
-    let reverseTimer = null;
     let cycleWidth = 0;
 
-    // Duplicate content to ensure seamless loop
-    track.innerHTML = track.innerHTML + track.innerHTML;
     requestAnimationFrame(() => {
       cycleWidth = track.scrollWidth / 2;
     });
 
-    root.addEventListener('mouseenter', () => paused = true);
-    root.addEventListener('mouseleave', () => { paused = false; last = performance.now(); });
+    root.addEventListener('mouseenter', () => { hoverMul = 0.15; });
+    root.addEventListener('mouseleave', () => { hoverMul = 1; });
 
-    // Wheel scroll DOWN -> reverse for a moment, then resume forward
-    window.addEventListener('wheel', (e) => {
-      if (e.deltaY > 0) {
-        direction = -1;
-        if (reverseTimer) clearTimeout(reverseTimer);
-        reverseTimer = setTimeout(() => { direction = 1; }, 2000);
+    // Tilt on hover (parallax-ish)
+    root.addEventListener('mousemove', (e) => {
+      const rect = root.getBoundingClientRect();
+      const cy = (e.clientY - rect.top) / rect.height - 0.5;
+      track.style.transform = track.style.transform.replace(/ rotateX\([^)]+\)/, '');
+      root.style.setProperty('--ck_tilt', `${(-cy * 4).toFixed(2)}deg`);
+    });
+
+    wheelListeners.push((dir, intensity) => {
+      if (dir === 0){
+        direction = 1;
+        speedMul = 1;
+      } else {
+        direction = dir;
+        speedMul = intensity * 2.2; // much faster while scrolling
       }
-    }, { passive: true });
+    });
 
     function tick(now){
-      const dt = (now - last) / 1000;
+      const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      if (!paused && cycleWidth > 0) {
-        offset += direction * speed * dt;
-        // wrap
+      if (cycleWidth > 0) {
+        offset += direction * baseSpeed * speedMul * hoverMul * dt;
         if (offset <= -cycleWidth) offset += cycleWidth;
         if (offset > 0) offset -= cycleWidth;
-        track.style.transform = `translate3d(${offset}px,0,0)`;
+        const tilt = root.style.getPropertyValue('--ck_tilt') || '0deg';
+        track.style.transform = `translate3d(${offset.toFixed(2)}px,0,0) rotateX(${tilt})`;
       }
       requestAnimationFrame(tick);
     }
@@ -2557,4 +2613,3 @@ function updateShadows() {
 </script>
 </body>
 </html>
-vvv
